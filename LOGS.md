@@ -1,5 +1,9 @@
 # LOGS
 
+## Implementation [Codex] 2025-08-17 17:14
+- Implemented ledger, CLI, docs and tests.
+
+
 session logs are timestamped to Singapore timezone in reverse chronological order, with latest entries at the top, and earlier entries at the bottom.
 
 ## UI program [Data Engineer] Codex prompt 2025-08-17 17:12
