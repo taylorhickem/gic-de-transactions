@@ -7,7 +7,10 @@ Your scope includes for design, code development and code review.
 
 For context, refer to 
 
-- `docs/*` for documentation of the context app design 
+- docs `docs/*` for documentation of the context app design 
+    - guidelines `guidelines.md`
+    - instructions `bank_account_interest.md`
+- crash reference program `crash/*`
 - cicd doc `docs/cicd.md` for CICD resources, methodology and code, S3 bucket file directory organization
 - session logs `LOGS.md`
 - the source code
