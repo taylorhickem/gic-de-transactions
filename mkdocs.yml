@@ -1,6 +1,6 @@
 site_name: GIC DE Assessment - Transactions
 
-nav:0
+nav:
   - Home: index.md
   - User Guide: user_guide.md
   - Assignment: bank_account_interest.md
