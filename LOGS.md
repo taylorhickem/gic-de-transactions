@@ -1,10 +1,82 @@
 # LOGS
+session logs are timestamped to Singapore timezone in reverse chronological order, with latest entries at the top, and earlier entries at the bottom.
+
+---
+## Issues [Data Engineer] Codex prompt 2025-08-17 19:23
+
+__Situation__
+the first version of the program works _mostly_ as expected, with the exception of some issues identified. In particular, the interest is only calculated for a single month with no interest accrual balance carry-forward to future months. 
+
+__Review__
+- documentation `docs/*`
+    - with special focus on issues `issues.md`
+- source code as-implemented
+- test coverage `tests.py`
+
+__Scope__
+- issues `issues.md`
+
+__Task__
+- resolve the open issues
+- ensure backwards compatibility, don't break any prior functionality.
+- prioritize widening the test coverage (5-10 tests) with negative tests and input validation tests
+    - the test should also cover the open issues: such as the interest accrual issue
+- for the interest accrual issue, break-up the interest and ledger balance calculation modeling from the statement print-out. Currently it's lumped together in a single function `ledger.Ledger.statement`. 
+    - Consider alternatives such as inherited class(s)
+        - `InterestLedger` inherits from a base `Ledger` OR
+        - `InterestAccount` that inherits from the base `Account`  OR
+        - `InterestTransaction` inherited from base `Transaction` etc.. 
+     or don't and just add some extra logic within the existing `Ledger` class. whichever makes sense.
+    - Also add a horizon window limit (ex: 209912) to avoid ridiculous scenarios like showing statements for the month `242007`
+
+__Guidelines__
+- **DONT BREAK ANYTHING** The current version of the program  _mostly_ works! so first priority is to ensure preservation of current functionality. 
+- no matter what you do, TEST TEST TEST and TEST. test at the beginning to ensure program works as expected prior to making any changes, and then prior to wrapping up your session and submitting your PR, test to validate your solution both preserves existing functionality AND resolves the issues addressed in your session.
+
+## Review [Data Engineer] 2025-08-17 <HH>:<MM>
+
+__issues__
+
+| id | status | issue | description |
+| - | - | - | - |
+| 01 | open | thin test coverage | only 3x tests, good functional coverage, although all tests are mostly positive, only one negative tests and no input validation tests |
+| 02 | closed | convenient entry-point `gicbank` | use `gicbank` as entry point instead of `python -m bank.ui` |
+| 03 | closed | beg balance | statement doesn't show beginning balance |
+| 04 | open | month-to-month interest accrual | interest is only calculated for single month but interest on balances is not accrrued to future months. |
+
+__Unit tests__
+
+ - passed 3x tests
+ - 3x positive functional tests
+    - deposit_and_withdraw
+    - withdrawal_insufficient_balance
+    - interest_calculation
+
+__Walkthrough__
+
+ - **(OK) Welcome prompt**: "Welcome to AwesomeGIC Bank! ..."
+ - **(OK) Quit**: exits correctly
+ - **(OK) Statement print - No interest**: statement print-out with no interest rules, show alternate months with no transactions, add display for beginning balance
+ - **(FLAGS) Interest calculation**: tested interest rate, calculates interest on balance for isolated month, but no balance accruals from cumulated interest txns from prior months
+
+ __updates__
+01. **entry-point**: created more convenient entry-point `gicbank` using `setup.py` and extra setup step `pip install -e .`
+02. **beginning balance**: add beginning balance to statement print-out
 
 ## Implementation [Codex] 2025-08-17 17:14
-- Implemented ledger, CLI, docs and tests.
+Implemented ledger, CLI, docs and tests.
 
+__Summary__
 
-session logs are timestamped to Singapore timezone in reverse chronological order, with latest entries at the top, and earlier entries at the bottom.
+- Added an object-oriented ledger that validates deposits and withdrawals and assigns unique transaction IDs, preventing negative balances for withdrawals
+- Implemented monthly statement generation with end-of-day interest calculation and interest crediting on the final day of the month
+- Documented installation and usage steps for end users and architectural details for developers in dedicated guides
+
+__Testing__
+✅ pytest tests.py
+
+__Notes__
+The interest calculation assumes all dates and rates are valid and does not handle leap years separately.
 
 ## UI program [Data Engineer] Codex prompt 2025-08-17 17:12
 This UI program is very similar to the UI implemented for the UI of the reference program `crash`, with a much simpler program logic model of a very simple ledger. 

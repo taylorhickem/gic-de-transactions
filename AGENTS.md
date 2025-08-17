@@ -53,8 +53,10 @@ for every session
 
 at the end of each session, log your session activity as a new timestamped entry in the logs doc.
 
+- your session log should at a minimum include the comments that you print-out to the user at the end of your session, plus additional details about your activity and files worked on, issues encountered.
 - session logs are timestamped to Singapore timezone
 - in reverse chronological order, with latest entries at the top, and earlier entries at the bottom.
+- entries begin after the first divider `---`
 
 Identify your session log entry with a header using this template pattern:
 

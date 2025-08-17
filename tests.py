@@ -1,8 +1,11 @@
-import os
+#!/usr/bin/env python3
+"""Unit tests"""
+# dependencies ---------------------------------------------------------------------------------------
 import unittest
 from bank import drive, state
 
 
+# unit tests ---------------------------------------------------------------------------------------
 class BankTests(unittest.TestCase):
     def setUp(self):
         # ensure fresh state
@@ -10,7 +13,7 @@ class BankTests(unittest.TestCase):
             state.STATE_FILE.unlink()
         drive.state_refresh()
 
-    def test_deposit_and_withdraw(self):
+    def test_01_deposit_and_withdraw(self):
         r1 = drive.transaction_add('20230601', 'AC001', 'D', 100)
         self.assertEqual(1, r1['success'])
         r2 = drive.transaction_add('20230602', 'AC001', 'W', 50)
@@ -20,12 +23,12 @@ class BankTests(unittest.TestCase):
         self.assertIn('20230601-01', stmt['statement'])
         self.assertIn('20230602-01', stmt['statement'])
 
-    def test_withdrawal_insufficient_balance(self):
+    def test_02_withdrawal_insufficient_balance(self):
         drive.transaction_add('20230601', 'AC002', 'D', 50)
         resp = drive.transaction_add('20230602', 'AC002', 'W', 60)
         self.assertEqual(-1, resp['success'])
 
-    def test_interest_calculation(self):
+    def test_03_interest_calculation(self):
         # setup transactions
         drive.transaction_add('20230505', 'AC001', 'D', 100)
         drive.transaction_add('20230601', 'AC001', 'D', 150)

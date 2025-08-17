@@ -1,8 +1,14 @@
+#!/usr/bin/env python3
+"""Main handler for program actions"""
+# dependencies ----------------------------------------------------------------------
 from . import state
 
-ledger = state.load()
+
+# module variables  -----------------------------------------------------------------
+ledger = None
 
 
+# actions  -------------------------------------------------------------------------
 def state_refresh():
     global ledger
     ledger = state.load()
@@ -35,3 +41,7 @@ def statement(account: str, year_month: str):
         return {'success': -1, 'error': str(e)}
     else:
         return {'success': 1, **result}
+
+
+# main  -------------------------------------------------------------------------------
+ledger = state.load()

@@ -1,8 +1,24 @@
+#!/usr/bin/env python3
+"""Classes for the transaction data model"""
+# dependencies ----------------------------------------------------------------------
 import datetime as dt
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
+# constants ------------------------------------------------------------------------------
+TXN_DATE_FORMAT = '%Y%m%d'
 
+
+# helper functions -----------------------------------------------------------------------
+def end_of_month(year, month):
+    if month == 12:
+        end_date = dt.date(year + 1, 1, 1) - dt.timedelta(days=1)
+    else:
+        end_date = dt.date(year, month + 1, 1) - dt.timedelta(days=1)
+    return end_date
+
+
+# classes ------------------------------------------------------------------------------
 @dataclass
 class Transaction:
     date: dt.date
@@ -59,7 +75,7 @@ class Ledger:
         return self.accounts[name]
 
     def add_transaction(self, date_str: str, account_name: str, t_type: str, amount: float) -> Transaction:
-        date = dt.datetime.strptime(date_str, '%Y%m%d').date()
+        date = dt.datetime.strptime(date_str, TXN_DATE_FORMAT).date()
         t_type = t_type.upper()
         if t_type not in ('D', 'W'):
             raise ValueError('Type must be D or W')
@@ -89,7 +105,7 @@ class Ledger:
     def add_rule(self, date_str: str, rule_id: str, rate: float) -> InterestRule:
         if not (0 < rate < 100):
             raise ValueError('Rate must be between 0 and 100')
-        date = dt.datetime.strptime(date_str, '%Y%m%d').date()
+        date = dt.datetime.strptime(date_str, TXN_DATE_FORMAT).date()
         # remove existing rule same date
         self.rules = [r for r in self.rules if r.date != date]
         rule = InterestRule(date=date, rule_id=rule_id, rate=rate)
@@ -103,6 +119,12 @@ class Ledger:
             return 0.0
         return applicable[-1].rate
 
+    @staticmethod
+    def _add_txn_line(lines, date, amount, txn_id, txn_type, end_bal, type_pad: str ='    '):
+        txn_line = f"| {date.strftime(TXN_DATE_FORMAT)} | {txn_id:<11} | {txn_type}{type_pad}| {amount:7.2f} | {end_bal:8.2f} |"
+        lines.append(txn_line)
+        return lines
+
     # --- statement and interest ---
     def statement(self, account_name: str, year_month: str) -> Dict[str, str]:
         year = int(year_month[:4])
@@ -110,14 +132,24 @@ class Ledger:
         acc = self.accounts.get(account_name)
         if not acc:
             raise ValueError('Account not found')
+
         transactions = acc.transactions_in_month(year, month)
         start_date = dt.date(year, month, 1)
-        if month == 12:
-            end_date = dt.date(year + 1, 1, 1) - dt.timedelta(days=1)
-        else:
-            end_date = dt.date(year, month + 1, 1) - dt.timedelta(days=1)
+        end_date = end_of_month(year, month)
         balance = acc.balance_before(start_date)
-        lines = [f"Account: {account_name}", "| Date     | Txn Id      | Type | Amount | Balance |"]
+
+        lines = [f"Account: {account_name}", "| Date     | Txn Id      | Type | Amount  | Balance  |"]
+        # show beginning balance
+        lines = self._add_txn_line(
+            lines,
+            start_date,
+            balance,
+            '',
+            'BAL',
+            balance,
+            type_pad='  '
+        )
+
         # map date to transactions
         txns_by_day: Dict[dt.date, List[Transaction]] = {}
         for t in transactions:
@@ -131,17 +163,26 @@ class Ledger:
                     balance += t.amount
                 elif t.type == 'W':
                     balance -= t.amount
-                lines.append(
-                    f"| {t.date.strftime('%Y%m%d')} | {t.txn_id:<11} | {t.type}    | {t.amount:7.2f} | {balance:8.2f} |"
+                lines = self._add_txn_line(
+                    lines,
+                    t.date,
+                    t.amount,
+                    t.txn_id,
+                    t.type,
+                    balance
                 )
             rate = self._rate_for_date(day)
             interest_total += balance * rate
             day += dt.timedelta(days=1)
         interest = round(interest_total / 100 / 365, 2)
         balance += interest
-        interest_date = end_date.strftime('%Y%m%d')
-        lines.append(
-            f"| {interest_date} |             | I    | {interest:7.2f} | {balance:8.2f} |"
+        lines = self._add_txn_line(
+            lines,
+            end_date,
+            interest,
+            '',
+            'I',
+            balance
         )
         statement_text = '\n'.join(lines)
         return {
@@ -154,7 +195,7 @@ class Ledger:
             'accounts': {
                 name: [
                     {
-                        'date': t.date.strftime('%Y%m%d'),
+                        'date': t.date.strftime(TXN_DATE_FORMAT),
                         'txn_id': t.txn_id,
                         'type': t.type,
                         'amount': t.amount,
@@ -165,7 +206,7 @@ class Ledger:
             },
             'rules': [
                 {
-                    'date': r.date.strftime('%Y%m%d'),
+                    'date': r.date.strftime(TXN_DATE_FORMAT),
                     'rule_id': r.rule_id,
                     'rate': r.rate,
                 }
@@ -182,7 +223,7 @@ class Ledger:
             for t in txns:
                 acc.add_transaction(
                     Transaction(
-                        date=dt.datetime.strptime(t['date'], '%Y%m%d').date(),
+                        date=dt.datetime.strptime(t['date'], TXN_DATE_FORMAT).date(),
                         txn_id=t['txn_id'],
                         type=t['type'],
                         amount=t['amount'],
@@ -191,7 +232,7 @@ class Ledger:
         for r in data.get('rules', []):
             ledger.rules.append(
                 InterestRule(
-                    date=dt.datetime.strptime(r['date'], '%Y%m%d').date(),
+                    date=dt.datetime.strptime(r['date'], TXN_DATE_FORMAT).date(),
                     rule_id=r['rule_id'],
                     rate=r['rate'],
                 )

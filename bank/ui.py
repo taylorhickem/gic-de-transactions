@@ -1,8 +1,10 @@
+#!/usr/bin/env python3
 """Simple banking CLI using ledger module."""
-
+# dependencies ----------------------------------------------------------------------
 from . import drive
 
 
+# classes ----------------------------------------------------------------------------
 class BankApp:
     def __init__(self, input_fn=input, output_fn=print):
         self.input_fn = input_fn
@@ -79,5 +81,10 @@ class BankApp:
                 self.output_fn(response['error'])
 
 
-if __name__ == '__main__':
+# entry point ----------------------------------------------------------------------------
+def main():
     BankApp().run()
+
+
+if __name__ == '__main__':
+    main()
