@@ -2,6 +2,18 @@
 session logs are timestamped to Singapore timezone in reverse chronological order, with latest entries at the top, and earlier entries at the bottom.
 
 ---
+## Issues [Codex] 2025-08-17 19:53:03
+
+__Summary__
+
+- Implemented month-to-month interest accrual with a 209912 horizon and separated interest computation from statement rendering
+- Expanded test suite to ten cases covering negative inputs and validation scenarios
+- Updated documentation and closed outstanding issues
+
+__Testing__
+
+- `pytest tests.py`
+
 ## Issues [Data Engineer] Codex prompt 2025-08-17 19:49
 
 __Situation__

@@ -52,6 +52,7 @@ Default account setup is no interest rules is cash account with no interest paym
 
 ### P: Print statement
 Enter `Account YearMonth` to generate a monthly statement including interest.
+Statements can only be generated up to December 2099 (`209912`).
 Example:
 ```
 AC001 202306
@@ -63,6 +64,8 @@ Example statement:
 | 20230601 | 20230601-01 | D    |   50.00 |    50.00 |
 | 20230630 |             | I    |    0.00 |    50.00 |
 ```
+
+Interest is automatically accrued at the end of each month and carried forward to future statements.
 
 ### Q: Quit
 Enter `Q` from the main menu.

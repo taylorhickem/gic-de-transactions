@@ -4,7 +4,7 @@
 
 The application is a small command line program implemented using an object-oriented design.
 
-- `bank/ledger.py` – domain models and the `Ledger` class that manages accounts, transactions and interest rules.
+- `bank/ledger.py` – domain models and the `Ledger` class that manages accounts, transactions and interest rules. Interest accrual is computed via `Ledger.accrue_interest` and statements are rendered separately.
 - `bank/state.py` – persistence helper that saves and loads ledger data from `state.json`.
 - `bank/drive.py` – thin wrapper exposing functions used by the UI. All functions return dictionaries with a `success` flag and optional data or error message.
 - `bank/ui.py` – interactive command line interface.
@@ -28,6 +28,8 @@ State is persisted as JSON in `state.json` at the project root. `Ledger.to_dict(
 ```bash
 pytest tests.py
 ```
+
+Statements are limited to dates up to `209912` by design to avoid unrealistic future periods.
 
 ## Logging
 

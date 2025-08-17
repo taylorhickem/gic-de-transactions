@@ -3,10 +3,11 @@
 # dependencies ----------------------------------------------------------------------
 import datetime as dt
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 # constants ------------------------------------------------------------------------------
 TXN_DATE_FORMAT = '%Y%m%d'
+MAX_YEARMONTH = 209912
 
 
 # helper functions -----------------------------------------------------------------------
@@ -68,6 +69,64 @@ class Ledger:
         self.accounts: Dict[str, Account] = {}
         self.rules: List[InterestRule] = []
 
+    # --- helpers -------------------------------------------------------------------
+    def _parse_year_month(self, year_month: str) -> (int, int):
+        if len(year_month) != 6 or not year_month.isdigit():
+            raise ValueError('Year month must be in YYYYMM format')
+        if int(year_month) > MAX_YEARMONTH:
+            raise ValueError('Year month exceeds allowed horizon')
+        year = int(year_month[:4])
+        month = int(year_month[4:])
+        if not 1 <= month <= 12:
+            raise ValueError('Invalid month')
+        return year, month
+
+    def _compute_interest_for_month(self, acc: Account, year: int, month: int) -> float:
+        start_date = dt.date(year, month, 1)
+        end_date = end_of_month(year, month)
+        balance = acc.balance_before(start_date)
+        txns_by_day: Dict[dt.date, List[Transaction]] = {}
+        for t in acc.transactions_in_month(year, month):
+            txns_by_day.setdefault(t.date, []).append(t)
+        interest_total = 0.0
+        day = start_date
+        while day <= end_date:
+            day_txns = txns_by_day.get(day, [])
+            for t in day_txns:
+                if t.type == 'D':
+                    balance += t.amount
+                elif t.type == 'W':
+                    balance -= t.amount
+                elif t.type == 'I':
+                    balance += t.amount
+            rate = self._rate_for_date(day)
+            interest_total += balance * rate
+            day += dt.timedelta(days=1)
+        return round(interest_total / 100 / 365, 2)
+
+    def accrue_interest(self, account_name: str, year_month: str) -> None:
+        year, month = self._parse_year_month(year_month)
+        acc = self.accounts.get(account_name)
+        if not acc:
+            raise ValueError('Account not found')
+        if not acc.transactions:
+            return
+        start_date = min(t.date for t in acc.transactions)
+        curr_year, curr_month = start_date.year, start_date.month
+        while (curr_year < year) or (curr_year == year and curr_month <= month):
+            eom = end_of_month(curr_year, curr_month)
+            if not any(t.type == 'I' and t.date == eom for t in acc.transactions):
+                interest = self._compute_interest_for_month(acc, curr_year, curr_month)
+                txn_id = f"{eom.strftime(TXN_DATE_FORMAT)}-I"
+                acc.add_transaction(
+                    Transaction(date=eom, txn_id=txn_id, type='I', amount=interest)
+                )
+            if curr_month == 12:
+                curr_month = 1
+                curr_year += 1
+            else:
+                curr_month += 1
+
     # --- account and transaction handling ---
     def _get_account(self, name: str) -> Account:
         if name not in self.accounts:
@@ -125,21 +184,19 @@ class Ledger:
         lines.append(txn_line)
         return lines
 
-    # --- statement and interest ---
+    # --- statement ---
     def statement(self, account_name: str, year_month: str) -> Dict[str, str]:
-        year = int(year_month[:4])
-        month = int(year_month[4:])
+        year, month = self._parse_year_month(year_month)
+        self.accrue_interest(account_name, year_month)
         acc = self.accounts.get(account_name)
         if not acc:
             raise ValueError('Account not found')
 
         transactions = acc.transactions_in_month(year, month)
         start_date = dt.date(year, month, 1)
-        end_date = end_of_month(year, month)
         balance = acc.balance_before(start_date)
 
         lines = [f"Account: {account_name}", "| Date     | Txn Id      | Type | Amount  | Balance  |"]
-        # show beginning balance
         lines = self._add_txn_line(
             lines,
             start_date,
@@ -150,40 +207,24 @@ class Ledger:
             type_pad='  '
         )
 
-        # map date to transactions
-        txns_by_day: Dict[dt.date, List[Transaction]] = {}
+        interest = 0.0
         for t in transactions:
-            txns_by_day.setdefault(t.date, []).append(t)
-        interest_total = 0.0
-        day = start_date
-        while day <= end_date:
-            day_txns = txns_by_day.get(day, [])
-            for t in day_txns:
-                if t.type == 'D':
-                    balance += t.amount
-                elif t.type == 'W':
-                    balance -= t.amount
-                lines = self._add_txn_line(
-                    lines,
-                    t.date,
-                    t.amount,
-                    t.txn_id,
-                    t.type,
-                    balance
-                )
-            rate = self._rate_for_date(day)
-            interest_total += balance * rate
-            day += dt.timedelta(days=1)
-        interest = round(interest_total / 100 / 365, 2)
-        balance += interest
-        lines = self._add_txn_line(
-            lines,
-            end_date,
-            interest,
-            '',
-            'I',
-            balance
-        )
+            if t.type == 'D':
+                balance += t.amount
+            elif t.type == 'W':
+                balance -= t.amount
+            elif t.type == 'I':
+                balance += t.amount
+                interest = t.amount
+            display_id = '' if t.type == 'I' else t.txn_id
+            lines = self._add_txn_line(
+                lines,
+                t.date,
+                t.amount,
+                display_id,
+                t.type,
+                balance
+            )
         statement_text = '\n'.join(lines)
         return {
             'statement': statement_text,
