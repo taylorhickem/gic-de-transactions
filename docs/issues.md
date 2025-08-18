@@ -4,9 +4,7 @@ issues: bugs, enhancements for the program development
 ## open
 open issues
 
-| id | status | issue | description |
-| - | - | - | - |
-| 04 | open | month-to-month interest accrual | interest is accrued across months with horizon limit |
+None
 
 ## closed
 closed issues
@@ -15,10 +13,11 @@ closed issues
 | 02 | closed | convenient entry-point `gicbank` | use `gicbank` as entry point instead of `python -m bank.ui` |
 | 03 | closed | beg balance | statement doesn't show beginning balance |
 | 01 | closed | thin test coverage | expanded to ten tests including negative and validation cases |
+| 04 | closed | month-to-month interest accrual | interest is accrued across months with horizon limit |
 
 ## issue details
 
-### (open) 04 month to month iterest accrual
+### (resolved) 04 month to month iterest accrual
 interest is only calculated for single month but interest on balances is not accrrued to future months.
 if the statement print-out is in a future month, say `202503` and meanwhile transactions go as far back as `202306` Then to accurately reflect the balance as-of `202503`, when the statement print function is executed from the UI, interest accruals need to be calculated for all balances from `202306` until `202503` to accurately reflect the current balance.
 

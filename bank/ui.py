@@ -3,15 +3,46 @@
 # dependencies ----------------------------------------------------------------------
 from . import drive
 
+DEFAULT_STATE = {
+  "accounts": {
+    "AC007": [
+      {
+        "date": "20230601",
+        "txn_id": "20230601-01",
+        "type": "D",
+        "amount": 10.0
+      }
+    ]
+  },
+  "rules": [
+    {
+      "date": "20230601",
+      "rule_id": "RULE01",
+      "rate": 1.9
+    },
+    {
+      "date": "20230610",
+      "rule_id": "RULE02",
+      "rate": 5.0
+    },
+    {
+      "date": "20230801",
+      "rule_id": "RULE03",
+      "rate": 0.5
+    }
+  ]
+}
+
 
 # classes ----------------------------------------------------------------------------
 class BankApp:
     def __init__(self, input_fn=input, output_fn=print):
         self.input_fn = input_fn
         self.output_fn = output_fn
-        drive.state_refresh()
+        drive.state_refresh(state_override=DEFAULT_STATE)
 
     def run(self):
+        drive.state_refresh(state_override=DEFAULT_STATE)
         self.output_fn("Welcome to AwesomeGIC Bank! What would you like to do?")
         while True:
             self.output_fn("[T] Input transactions\n[I] Define interest rules\n[P] Print statement\n[Q] Quit")

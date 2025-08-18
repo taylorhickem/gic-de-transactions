@@ -9,9 +9,10 @@ ledger = None
 
 
 # actions  -------------------------------------------------------------------------
-def state_refresh():
+def state_refresh(state_override={}):
     global ledger
-    ledger = state.load()
+    ledger = state.load(state_override=state_override)
+    state.save(ledger)    
 
 
 def transaction_add(date: str, account: str, t_type: str, amount: float):
@@ -40,6 +41,7 @@ def statement(account: str, year_month: str):
     except Exception as e:
         return {'success': -1, 'error': str(e)}
     else:
+        state.save(ledger)
         return {'success': 1, **result}
 
 

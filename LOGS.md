@@ -2,6 +2,11 @@
 session logs are timestamped to Singapore timezone in reverse chronological order, with latest entries at the top, and earlier entries at the bottom.
 
 ---
+## Issue: Interest accrual [Data Engineer] review 2025-08-18 11:05
+resolved the interest accrual issue
+ - resolved bug `ledger.Ledger._accrue_interest` modify the state variable `acc`
+ - added state save to JSON file checkpoints
+
 ## Issue: Interest accrual [Data Engineer] review 2025-08-17 20:10
 failed, did not implement correctly
 zipping and submitting as-is

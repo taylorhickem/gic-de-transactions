@@ -102,14 +102,13 @@ class Ledger:
             rate = self._rate_for_date(day)
             interest_total += balance * rate
             day += dt.timedelta(days=1)
-        return round(interest_total / 100 / 365, 2)
+        monthly_interest = round(interest_total / 100 / 365, 2)
+        return monthly_interest
 
-    def accrue_interest(self, account_name: str, year_month: str) -> None:
+    def _accrue_interest(self, acc, year_month: str) -> None:
         year, month = self._parse_year_month(year_month)
-        acc = self.accounts.get(account_name)
-        if not acc:
-            raise ValueError('Account not found')
         if not acc.transactions:
+            print('INFO. no transactions for this account.')
             return
         start_date = min(t.date for t in acc.transactions)
         curr_year, curr_month = start_date.year, start_date.month
@@ -187,11 +186,11 @@ class Ledger:
     # --- statement ---
     def statement(self, account_name: str, year_month: str) -> Dict[str, str]:
         year, month = self._parse_year_month(year_month)
-        self.accrue_interest(account_name, year_month)
         acc = self.accounts.get(account_name)
         if not acc:
             raise ValueError('Account not found')
-
+        
+        self._accrue_interest(acc, year_month)
         transactions = acc.transactions_in_month(year, month)
         start_date = dt.date(year, month, 1)
         balance = acc.balance_before(start_date)
@@ -207,15 +206,14 @@ class Ledger:
             type_pad='  '
         )
 
-        interest = 0.0
+        interest = 0
         for t in transactions:
-            if t.type == 'D':
+            if t.type in ['D', 'I']:
                 balance += t.amount
             elif t.type == 'W':
                 balance -= t.amount
             elif t.type == 'I':
-                balance += t.amount
-                interest = t.amount
+                interest += t.amount
             display_id = '' if t.type == 'I' else t.txn_id
             lines = self._add_txn_line(
                 lines,

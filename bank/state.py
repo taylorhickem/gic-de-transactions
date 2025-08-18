@@ -11,8 +11,10 @@ STATE_FILE = 'state.json'
 
 
 # state functions -------------------------------------------------------------------
-def load() -> Ledger:
-    if STATE_FILE.exists():
+def load(state_override={}) -> Ledger:
+    if state_override:
+        return Ledger.from_dict(state_override)
+    elif STATE_FILE.exists():
         data = json.loads(STATE_FILE.read_text())
         return Ledger.from_dict(data)
     return Ledger()
