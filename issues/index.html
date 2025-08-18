@@ -360,9 +360,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#open-04-month-to-month-iterest-accrual" class="md-nav__link">
+  <a href="#resolved-04-month-to-month-iterest-accrual" class="md-nav__link">
     <span class="md-ellipsis">
-      (open) 04 month to month iterest accrual
+      (resolved) 04 month to month iterest accrual
     </span>
   </a>
   
@@ -480,9 +480,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#open-04-month-to-month-iterest-accrual" class="md-nav__link">
+  <a href="#resolved-04-month-to-month-iterest-accrual" class="md-nav__link">
     <span class="md-ellipsis">
-      (open) 04 month to month iterest accrual
+      (resolved) 04 month to month iterest accrual
     </span>
   </a>
   
@@ -513,32 +513,16 @@
 <p>issues: bugs, enhancements for the program development</p>
 <h2 id="open">open</h2>
 <p>open issues</p>
-<table>
-<thead>
-<tr>
-<th>id</th>
-<th>status</th>
-<th>issue</th>
-<th>description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>04</td>
-<td>open</td>
-<td>month-to-month interest accrual</td>
-<td>interest is accrued across months with horizon limit</td>
-</tr>
-</tbody>
-</table>
+<p>None</p>
 <h2 id="closed">closed</h2>
 <p>closed issues</p>
 <p>| id | status | issue | description |
 | 02 | closed | convenient entry-point <code>gicbank</code> | use <code>gicbank</code> as entry point instead of <code>python -m bank.ui</code> |
 | 03 | closed | beg balance | statement doesn't show beginning balance |
-| 01 | closed | thin test coverage | expanded to ten tests including negative and validation cases |</p>
+| 01 | closed | thin test coverage | expanded to ten tests including negative and validation cases |
+| 04 | closed | month-to-month interest accrual | interest is accrued across months with horizon limit |</p>
 <h2 id="issue-details">issue details</h2>
-<h3 id="open-04-month-to-month-iterest-accrual">(open) 04 month to month iterest accrual</h3>
+<h3 id="resolved-04-month-to-month-iterest-accrual">(resolved) 04 month to month iterest accrual</h3>
 <p>interest is only calculated for single month but interest on balances is not accrrued to future months.
 if the statement print-out is in a future month, say <code>202503</code> and meanwhile transactions go as far back as <code>202306</code> Then to accurately reflect the balance as-of <code>202503</code>, when the statement print function is executed from the UI, interest accruals need to be calculated for all balances from <code>202306</code> until <code>202503</code> to accurately reflect the current balance.</p>
 <p>part of the issue is the conflation of the statement printing with interest accrual in the function <code>ledger.Ledger.statement</code>.
